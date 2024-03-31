@@ -1,0 +1,40 @@
+version: "3.8"
+
+services:
+  backend:
+    build:
+      context: backend
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    depends_on:
+      - psql
+    env_file:
+      - backend/.env.production
+
+  frontend:
+    build:
+      context: frontend
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+  psql:
+    image: postgres:16
+    volumes:
+      - postgres_db:/var/lib/postgresql/data
+
+  migrations:
+    build:
+      context: backend
+      dockerfile: Dockerfile
+    command: yarn typeorm migration:run
+    depends_on:
+      - psql
+    env_file:
+      - backend/.env.production
+
+volumes:
+  postgres_db:
